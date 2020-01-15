@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="en">
+
+<!--處理輸入參數 ?displayName=小陳&userId=U12345678901234567890123456789012&pictureUrl=www.google.com-->
+
+<head>
+  <!--  設定參數-->
+  <script>
+    var useLocalAPIs = false;
+    var version = "0.1";
+  </script>
+  
+  <meta charset="UTF-8">
+  <title>uGym 優惠券</title>
+  <!--  <link rel="stylesheet" href="css/main.css">-->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+  <link href="https://fonts.googleapis.com/css?family=Noto+Sans+TC&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">  
+  <script src="https://code.jquery.com/jquery-1.12.3.min.js"></script>
+  <!--  <script src="js/jquery.twzipcode.min.js"></script>-->
+
+  <link rel="stylesheet" href="css/loading.css" />
+  <script src="js/loading.js"></script>  
+
+  <link rel="stylesheet" href="css/mescroll.css">
+  <style type="text/css">
+    /*mescroll 滚动区域*/
+    .mescroll {
+      position: fixed;
+      top: 44px;
+      bottom: 0;
+      height: auto;
+    }
+  </style>
+  <script src="js/mescroll.js" type="text/javascript" charset="utf-8"></script>
+<!--
+  <style>
+  body, html {
+    height: 100%;
+    margin: 0;
+  }
+  .bg {
+    /* The image used */
+    background-image: url(photo-1547919307-1ecb10702e6f.jpg);
+
+    /* Full height */
+    height: 100%; 
+
+    /* Center and scale the image nicely */
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+  </style>
+-->
+
+</head>
+
+<body>
+<div id="mescroll" class="mescroll"> 
+  <div id="joinFormHeader" class="w3-container w3-blue">
+    <h2 style="font-family: 'Noto Sans TC'">加入林口運動中心會員 
+      <span id="versionStr" style="float: right; font-size: 0.5em;"></span>
+    </h2>
+    
+  </div>
+
+  <div id="joinForm" class="w3-container bg" style="font-family: 'Noto Sans TC'">
+    <p>
+      <label>姓名(必填)</label>
+      <input id="name" class="w3-input" type="text"></p>
+    <p>
+      <label>姓別(必填，Inbody 量測需要)</label>
+      <select id="gender" class="w3-select" name="option">
+<!--        <option value="" disabled selected>男，女或保密</option>-->
+        <option value="男">男</option>
+        <option value="女">女</option>
+<!--        <option value="保密">保密</option>-->
+      </select></p>
+    <p>
+      <label>身高(必填，Inbody 量測需要)</label>
+      <input id="bodyHeight" class="w3-input" type="text" placeholder="例如: 180cm"></p>
+    <p>
+      <label>生日(必填，Inbody 量測需要)</label>
+      <input id="birthday" class="w3-input" type="text" placeholder="格式 2020-01-01"></p>      
+    <p>     
+      <label>電話(必填，聯絡使用)</label>
+      <input id="phone" class="w3-input" type="text"></p>
+    <p>
+      <label>身分證號(必填，作為會員身份辨識，不用做其他用途)</label>
+      <input id="identity" class="w3-input" type="text"></p>
+    <p>
+      <label>地址(建議，聯絡使用)</label>
+      <input id="address" class="w3-input" type="text"></p>
+    <p>
+      <button class="w3-btn w3-block w3-indigo" onclick="addConfirm()">加入會員</button>
+    </p>
+    <p>
+      <label>點擊 加入會員 表示您同意以下隱私權以及資料使用條款聲明</label>
+    </p>
+  </div>
+
+  <div class="w3-container">
+    <div id="finishMessage" style="display: none">
+      <h3 style="font-family: 'Noto Sans TC'">您已成功加入會員，謝謝!</h3>
+    </div>
+
+    <div id="errorMessage" style="display: none">
+      <h3 style="font-family: 'Noto Sans TC'">發生錯誤，請洽管理員。</h3>
+    </div>
+
+    <div id="alreadyMessage" style="display: none">
+      <h3 style="font-family: 'Noto Sans TC'">您以前已經加入會員!</h3>
+    </div>
+  </div>
+  
+<!--    ---------- 以下是 團課資料  --------------------------------------------------- ----->
+  <div id="courseSection" style="display: none">
+    <div id="courseSectionHeader" class="w3-container w3-blue">
+      <h2 style="font-family: 'Noto Sans TC'">我的優惠券 
+        <span id="versionStr" style="float: right; font-size: 0.5em;"></span>
+      </h2>
+    </div> 
+         
+    <div class="w3-container" id="availableCourses" style="font-family: 'Noto Sans TC'">
+      <span><button class="w3-button w3-circle w3-teal" style="margin: 10px; width: 40px" onclick="refreshCourses()"><i class="fa fa-refresh" style="margin-left: -3px;"></i></button></span>
+      <h4 style="font-family: 'Noto Sans TC'; display: inline;">可用優惠券</h4>
+      
+
+  <!--
+      <div class="w3-card-4" style="width:100%">
+        <header class="w3-container w3-teal">
+          <h4>課程名稱 - </h4>
+        </header>
+        <div class="w3-container">
+          <p>老師名字:</p>
+          <p>日期時間:</p>
+          <p>費用:</p>
+        </div>
+        <button class="w3-button w3-block w3-indigo" onclick="使用優惠券(1)">報名</button>
+      </div>
+  -->
+    </div>   
+    
+    <hr>
+    <div class="w3-container" id="usedCoupons" style="font-family: 'Noto Sans TC'">
+      <span><button class="w3-button w3-circle w3-teal" style="margin: 10px; width: 40px" onclick="refreshCourses()"><i class="fa fa-refresh" style="margin-left: -3px"></i></button></span>     
+      <h4 style="font-family: 'Noto Sans TC'; display: inline">已使用優惠券</h4>
+
+  <!--
+      <div class="w3-card-4" style="width:100%">
+        <header class="w3-container w3-teal">
+          <h4>課程名稱 - </h4>
+        </header>
+        <div class="w3-container">
+          <p>老師名字:</p>
+          <p>日期時間:</p>
+          <p>費用:</p>
+        </div>
+        <button class="w3-button w3-block w3-indigo" onclick="使用優惠券(1)">報名</button>
+      </div>
+  -->
+    </div> 
+                 
+    <hr>
+    <div class="w3-container" id="oldCoupons" style="font-family: 'Noto Sans TC'">
+      <span><button class="w3-button w3-circle w3-teal" style="margin: 10px; width: 40px" onclick="refreshCourses()"><i class="fa fa-refresh" style="margin-left: -3px"></i></button></span>     
+      <h4 style="font-family: 'Noto Sans TC'; display: inline">已到期優惠券</h4>
+
+  <!--
+      <div class="w3-card-4" style="width:100%">
+        <header class="w3-container w3-teal">
+          <h4>課程名稱 - </h4>
+        </header>
+        <div class="w3-container">
+          <p>老師名字:</p>
+          <p>日期時間:</p>
+          <p>費用:</p>
+        </div>
+        <button class="w3-button w3-block w3-indigo" onclick="使用優惠券(1)">報名</button>
+      </div>
+  -->
+    </div>                  
+                  
+  </div>  
+  </div>
+  <script>
+    $("#versionStr").text("v."+version);
+    if (useLocalAPIs) {
+      console.log("使用 local API 服務");
+    } else {
+      console.log("使用放在 Heroku 上的 API 服務");
+    }
+    
+  var initialLoad = true;
+
+    // mescroll 下拉 回彈 更新=======================
+    var mescroll = new MeScroll("mescroll", {
+      down: {
+        //auto: false 
+        callback: function(){
+          console.log("initial load", initialLoad);
+          if (initialLoad) {
+            mescroll.endSuccess(); 
+            initialLoad = false;
+          } else {
+            mescroll.endSuccess(); 
+            console.log("reload", mescroll.isDownScrolling);   
+            // 用 setTimeout 延遲，讓 iOS 上有時間回彈
+            setTimeout(function(){location.reload();}, 300);
+            //}
+
+          }        
+        },
+        isBounce: false, 
+        toTop: {},
+        lazyLoad: { use: true } 
+      },    
+      up: {
+        //callback: pullUptoReload, 
+        isBounce: false, 
+        toTop: {},
+        lazyLoad: { use: true } 
+      }
+    });   
+    // ==========================================  
+    
+    var memberData = [];
+    var dataToAdd = [];
+    var paramToSend;
+    var inputParamString = location.search;
+    var inputError = false;
+    //var userIdString = location.search;  
+    
+    var couponData=[];
+    var couponHistory=[];
+    var couponMember=[];    
+    var allDataReady=0;
+
+    notInCoupon=[];
+    inCoupon=[];
+    myHistory=[];     
+    
+    $("#joinForm").hide();
+    $("#joinFormHeader").hide();
+    
+    // 處理輸入參數 ?displayName=小陳&userId=U12345678901234567890123456789012&pictureUrl=www.google.com
+    var inputParam = inputParamString.split("&");
+    // inputParam[0]="?displayName=..."
+    // inputParam[1]="userId=..."
+    // inputParam[2]="pictureUrl=..."
+    try {
+      var displayName = inputParam[0].split("=");
+      var userId      = inputParam[1].split("=");
+      var pictureUrl  = inputParam[2].split("=");
+    } catch (e) {
+      alert("輸入參數錯誤");
+      $("#joinForm").hide();
+      $("#errorMessage").css("display", "block");
+      inputError = true;
+    }
+
+    if (!inputError) {
+      console.log(displayName, userId, pictureUrl);
+
+      if (userId[0] == "userId" && userId[1].length==33 ) {
+        console.log("valid UserId ", userId[1]);
+
+        checkUserIdExist();
+
+        $("#name").val(decodeURI(displayName[1]));
+
+
+      } else {
+        $("#joinForm").hide();
+        $("#errorMessage").css("display", "block");
+        alert("無效的 LINE ID!!");
+      }
+    }
+
+    function checkUserIdExist() {
+      //Call API:00 檢查 userId 有沒有重複參加 */
+
+      paramToSend = "?API=00" + "&UserId=" + userId[1];
+
+      var request = new XMLHttpRequest();
+      if (useLocalAPIs) {
+        request.open('GET', 'http://localhost:5000' + paramToSend, true);
+      } else {
+        request.open('GET', 'https://api-ugym-courses.herokuapp.com/'+paramToSend, true);
+      }
+
+      request.onload = function() {
+        $.loading.end();
+        console.log(this.response);
+        if (this.response == "API:00 會員不存在") {
+          $("#joinForm").show();
+          $("#joinFormHeader").show();
+          alert("還不是會員，請先加入為會員")
+        } else {
+          $("#joinForm").hide();
+          $("#joinFormHeader").hide();
+          //$("#alreadyMessage").css("display", "block");            
+          //alert("您以前已經加入會員! 前往優惠券");
+          // 顯示優惠券表格
+          console.log("前往優惠券");
+          $("#courseSection").css("display", "block");
+          readCoupons();
+          //addCouponCards();
+        }
+      }
+      // Send API request 
+      $.loading.start('檢查是否已是會員');
+     
+      request.send();
+    }
+
+    function addConfirm() {
+      console.log("addConfirm");
+      // TODO: 檢查資料格式     
+      if (   $("#name").val() == ""
+          || $("#gender").val() == ""
+          || $("#birthday").val() == ""
+          || $("#phone").val() == ""
+          || $("#identity").val() == ""
+         ) {
+        alert("請填寫必填項目!");
+        return 0;
+      }
+
+      paramToSend = "?API=01" +
+        "&UserId=" + userId[1] +
+        "&Name=" + $("#name").val() +
+        "&Gender=" + $("#gender").val() +     
+        "&Birth=" + $("#birthday").val() +
+        "&Phone=" + $("#phone").val() +
+        "&ID=" + $("#identity").val() +
+        "&Address=" + $("#address").val() +
+        "&Height=" + $("#bodyHeight").val() +
+        "&PicURL=" + pictureUrl[1];
+
+      var profile = "請確認會員資料:\n" +
+        "    會員姓名: " + $("#name").val() + "\n" +
+        "    會員姓別: " + $("#gender").val() + "\n" +
+        "    會員身高: " + $("#bodyHeight").val() + "\n" +          
+        "    會員生日: " + $("#birthday").val() + "\n" +
+        "    會員電話: " + $("#phone").val() + "\n" +
+        "    身分證號: " + $("#identity").val() + "\n" +
+        "    會員地址: " + $("#address").val();
+
+      console.log(paramToSend);
+
+      //window.location("https://member-join-form-for-line.herokuapp.com/"+paramToSend);
+      //webCourseAPI();      
+
+      if (confirm(profile)) {
+
+        // call API:01 增加新會員
+        var request = new XMLHttpRequest()
+        if (useLocalAPIs) {
+          request.open('GET', 'http://localhost:5000' + paramToSend, true);
+        } else {
+          request.open('GET', 'https://api-ugym-courses.herokuapp.com/'+paramToSend, true);
+        }
+      
+
+        request.onload = function() {
+          console.log(this.response);
+
+          if (this.response == "API:01 會員寫入成功") {
+            $("#joinForm").hide();
+            $("#joinFormHeader").hide();
+            //$("#finishMessage").css("display", "block"); 
+            alert("會員加入成功，前往優惠券")
+            // 顯示優惠券表格
+            console.log("前往優惠券");
+            $("#courseSection").css("display", "block");
+            readCoupons();
+            //addCouponCards();
+
+          } else {
+            alert("會員加入失敗，請洽管理員")
+            $("#joinForm").hide();
+            $("#errorMessage").css("display", "block");
+          }
+
+        }
+        // Send request
+        request.send();
+
+      };
+    };
+
+    function readCoupons(){
+      console.log("call API to Read Database");
+      userName = decodeURI(displayName[1]);
+      
+      // hard coded data, TODO: replaced with APIs ==========================================
+//      couponData = [
+//        ["C0002","TEST #2 單次","2020-1-9",""],
+//        ["C0003","TEST #3","2020-1-11",""],
+//      ];
+//      couponHistory = [
+//        ["C0001","Test1","2020-1-9",""],   
+//      ];
+//      courseMember = [
+//        ["C0001",["小白","已使用","已確認"],["小華","已使用","已確認"],  ["小陳","已使用","未確認"]],
+//        ["C0002",["小白","已使用","已確認"],["小華","已使用","已確認"],["Jacky","已使用","未確認"]],
+//        ["C0003",                                                                          ],
+//      ];
+      // =====================================================================================
+      
+
+      $.loading.start('讀取資料');
+      getDataByAPIs();
+
+      var checkDataReady = setInterval(function(){ 
+        //console.log("aaa", allDataReady);
+        if (allDataReady==3) {
+          clearInterval(checkDataReady);
+          console.log("Data is ready");
+          //alert("Data is ready");
+          $.loading.end();
+          notInCoupon=[];
+          inCoupon=[];
+          myHistory=[];     
+          var used=false;
+          var isNow=false;
+          var inHistory=false; 
+          couponMember.forEach(function(coupon, index, array){  
+            used = false;        
+            for (var i=1; i<coupon.length;i++) {
+              //console.log(coupon[i][0]);
+              if (coupon[i][0] == userName) {
+                //console.log(coupon[0],userName, "已使用")
+                used = true;
+              }
+            };
+
+            isNow = false;
+            couponData.forEach(function(newCoupon, index, array){
+              if (newCoupon[0]==coupon[0]) isNow = true; 
+            });
+
+            inHistory = false;
+            couponHistory.forEach(function(oldCoupon, index, array){
+              if (oldCoupon[0]==coupon[0]) inHistory = true; 
+            });
+
+            if (!used && isNow)     notInCoupon.push(coupon[0]);
+            if (used  && isNow)     inCoupon.push(coupon[0]);        
+            if (used  && inHistory) myHistory.push(coupon[0]);
+          });
+          addCouponCards();
+        }
+      }, 100);
+     
+    };
+  
+  
+    function getDataByAPIs() {
+      var request1, reuquest2, request3;
+      // call API:30 =========================================================================
+      paramToSend = "?API=30";      
+      request1 = new XMLHttpRequest()
+      if (useLocalAPIs) {
+        request1.open('GET', 'http://localhost:5000' + paramToSend, true);
+      } else {
+        request1.open('GET', 'https://api-ugym-courses.herokuapp.com/'+paramToSend, true);
+      }
+
+      request1.onload = function() {
+        if (this.response != "API:30 couponData 讀取失敗") {
+          couponData = JSON.parse(this.response);
+          //console.log(couponData);
+          allDataReady++;
+          request2.send();
+        } else {
+          clearInterval(checkDataReady);
+          alert("API:30 couponData 讀取失敗")
+        }
+
+      }
+      // Send request
+      request1.send();
+      // =====================================================================================      
+
+      // call API:31 =========================================================================
+      paramToSend = "?API=31";      
+      request2= new XMLHttpRequest()
+      if (useLocalAPIs) {
+        request2.open('GET', 'http://localhost:5000' + paramToSend, true);
+      } else {
+        request2.open('GET', 'https://api-ugym-courses.herokuapp.com/'+paramToSend, true);
+      }
+
+      request2.onload = function() {
+        if (this.response != "API:31 courseHistory 讀取失敗") {
+          couponHistory = JSON.parse(this.response);
+          //console.log(couponHistory);
+          allDataReady++;
+          request3.send();          
+        } else {
+          clearInterval(checkDataReady);
+          alert("API:31 courseHistory 讀取失敗")
+        }
+
+      }
+      // =====================================================================================      
+      
+
+      // call API:32 =========================================================================
+      paramToSend = "?API=32";      
+      request3 = new XMLHttpRequest()
+      if (useLocalAPIs) {
+        request3.open('GET', 'http://localhost:5000' + paramToSend, true);
+      } else {
+        request3.open('GET', 'https://api-ugym-courses.herokuapp.com/'+paramToSend, true);
+      }
+
+      request3.onload = function() {
+        if (this.response != "API:32 couponMember 讀取失敗") {
+          couponMember = JSON.parse(this.response);
+          //console.log(couponMember);
+          allDataReady++;
+        } else {
+          clearInterval(checkDataReady);
+          alert("API:32 couponMember 讀取失敗")
+        }
+
+      }
+      // ===================================================================================== 
+      
+    }
+    
+    function addCouponCards(){
+      console.log("add cards");
+      
+      // cardStr1+課程名稱+cardStr2+老師名字+cardStr3+日期時間+cardStr4+費用+cardStr5+index+cardStr6
+      var cardStr1='<br> <div class="w3-card-4" style="width:100%;"> <header class="w3-container w3-teal"> \
+                    <h5 class="s-header" style="font-family: \'Noto Sans TC\'">'; //優惠券編號及優惠券名稱
+      var cardStr2='</h5> </header> <div class="w3-container" > <p>';
+      var cardStr3='<span style="float:right">日期:';
+      var cardStr4='</span><p>卡路里: ';
+      var cardStr5='<span style="float:right">費用: ';    
+      var cardStr6='</span></p> </div> <button class="w3-button w3-block w3-indigo" onclick="使用優惠券(\'';
+      var cardStr7='\')" >使用優惠券</button> </div>';
+      
+      var cardStr6_1='</span></p> </div> <button class="w3-button w3-block w3-grey">';
+      var cardStr7_1='</button> </div>';   
+      
+      var cardStr11='<br> <div class="w3-card-4" style="width:100%;"> <header class="w3-container w3-teal"> \
+                    <h5 class="s-header" style="font-family: \'Noto Sans TC\'">'; //優惠券編號及優惠券名稱
+      var cardStr12='</h5> </header> <div class="w3-container" > <p style="margin:0px">使用期限: ';
+      var cardStr14='</p><img src="優惠.png" alt="" style="height:50px;"></div> <button class="w3-button w3-block w3-indigo" onclick="使用優惠券(\'';
+      var cardStr17='\')" >使用優惠券</button> </div>';
+
+      //var cardStr12_1='</h5> </header> <div class="w3-container" > <p style="margin:0px">已使用';  
+      //var cardStr13_1='</p></div></div>';
+      var cardStr12_1='</h5> </header>';  
+      var cardStr13_1='</div>';      
+      var cardStr14_1='</p><img src="優惠.png" alt="" style="height:50px;"></div> <button class="w3-button w3-block w3-grey">';
+      var cardStr17_1='</button></div>';       
+             
+
+      // 課程編號=[];  課程名稱=[];  老師名字=[];  日期時間=[];  卡路里=[];   費用=[];
+      var 優惠券編號=[];
+      var 優惠券名稱=[];
+      var 優惠券日期=[];     
+      
+      // 新增 可使用優惠券 卡片 ==============================================================      
+      notInCoupon.forEach(function(couponN, indexN, arrayN){
+        couponData.forEach(function(coupon, index, array){
+          if (couponN == coupon[0]) {
+            //console.log(coupon);
+            優惠券編號.push(coupon[0]);
+            優惠券名稱.push(coupon[1]);
+            優惠券日期.push(coupon[2]);           
+          }
+        });
+      });
+
+      var cardStr;
+      for (var i=0;i<notInCoupon.length;i++) {
+        cardStr = cardStr11+優惠券編號[i] + " - " +優惠券名稱[i]
+                 //+cardStr12+優惠券內容[i] 
+                 +cardStr12+優惠券日期[i]
+                 +cardStr14+優惠券編號[i]
+                 +cardStr17;
+        //console.log(cardStr);
+
+        $("#availableCourses").append(cardStr);
+      }
+      // ================================================================================ 
+
+      // 新增 已使用優惠券 卡片 ==============================================================
+      // 課程編號=[];  課程名稱=[];  老師名字=[];  日期時間=[];  卡路里=[];   費用=[];  
+      優惠券編號=[]; 優惠券名稱=[]; 優惠券內容=[]; 優惠券日期=[];    
+      inCoupon.forEach(function(couponN, indexN, arrayN){
+        couponData.forEach(function(coupon, index, array){
+          if (couponN == coupon[0]) {
+            //console.log(coupon);
+            優惠券編號.push(coupon[0]);
+            優惠券名稱.push(coupon[1]);
+            優惠券日期.push(coupon[2]);      
+          }
+        });
+      });
+
+      var cardStr;
+      var confirmed=false;
+      for (var i=0;i<inCoupon.length;i++) {
+        // 尋找是否已確認
+        confirmed=false;
+        couponMember.forEach(function(coupon, index, array){
+          if (coupon[0]==inCoupon[i]) {
+            for (var j=1;j<coupon.length;j++){
+              if (coupon[j][0]==userName && coupon[j][2]=="已確認") {
+                confirmed=true;
+              }
+            };
+          }
+        });
+        
+        var confirmedStr = (confirmed)?"已確認使用":"請到櫃台確認使用"
+        // 合成字串
+        cardStr = cardStr11+優惠券編號[i] + " - " +優惠券名稱[i]
+                 +cardStr12+優惠券日期[i] 
+                 //+cardStr12_1
+                 //+cardStr14_1
+                 //+cardStr13_1
+                 +cardStr14_1+confirmedStr
+                 +cardStr17_1;
+        //console.log(cardStr);
+
+        $("#usedCoupons").append(cardStr);
+      }      
+      // ===================================================================================      
+      
+      // 新增 過期已使用優惠券 卡片 ==============================================================
+      //課程編號=[];  課程名稱=[];  老師名字=[];  日期時間=[];  卡路里=[];   費用=[];  
+      優惠券編號=[]; 優惠券名稱=[]; 優惠券內容=[]; 優惠券日期=[];  
+      myHistory.forEach(function(couponN, indexN, arrayN){
+        couponHistory.forEach(function(coupon, index, array){
+          if (couponN == coupon[0]) {
+            //console.log(coupon);
+            優惠券編號.push(coupon[0]);
+            優惠券名稱.push(coupon[1]);
+            優惠券日期.push(coupon[2]);            
+          }
+        });
+      });
+
+      var cardStr;
+      for (var i=0;i<myHistory.length;i++) {
+        cardStr = cardStr11+優惠券編號[i] + " - " +優惠券名稱[i]
+                 +cardStr12+優惠券日期[i] 
+                 //+cardStr12_1
+                 //+cardStr14_1
+                 //+cardStr13_1
+                 +cardStr14_1+"已過期"
+                 +cardStr17_1;
+        //console.log(cardStr);
+
+        $("#oldCoupons").append(cardStr);
+      }      
+      // ===================================================================================            
+      
+    };
+        
+    
+ 
+    
+    function 使用優惠券(couponId){
+      console.log(userName,"使用優惠券:", couponId, typeof couponId);
+      
+      // call API:40 =========================================================================
+      paramToSend = "?API=40&"+"UserName="+userName+"&CouponId="+couponId;
+      console.log(paramToSend);
+      var request = new XMLHttpRequest()
+      if (useLocalAPIs) {
+        request.open('GET', 'http://localhost:5000' + paramToSend, true);
+      } else {
+        request.open('GET', 'https://api-ugym-courses.herokuapp.com/'+paramToSend, true);
+      }
+
+      request.onload = function() {
+        alert(this.response);
+        refreshCourses();
+//old        if (this.response != "API:20 會員報名失敗") {
+//old       courseData = JSON.parse(this.response);
+//old       console.log(courseData);
+//old     } else {
+//old       alert("API:20 會員報名失敗")
+//old     }
+      }
+      // Send request
+      request.send();      
+      
+    }
+    
+    function refreshCourses() {
+      console.log("refresh Courses");
+      location.reload();
+    }
+    
+    
+  </script>
+
+</body>
+
+</html>
